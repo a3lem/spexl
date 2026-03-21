@@ -18,7 +18,7 @@ For each directory in `change-dir/deltas/`:
 
 ### 3. Merge Deltas into Reference Specs
 
-Invoke the **spec-sync agent** with the change directory path and spec root. The agent handles all delta-to-reference merging (ADDED, MODIFIED, REMOVED, RENAMED) and creates new capability specs as needed.
+Invoke the **spec-sync agent** with the change directory path and spec root. The agent handles all delta-to-reference merging (ADDED, MODIFIED, REMOVED, RENAMED) and creates new capability specs as needed. Run `spexl template reference-spec` for the reference spec template when creating new capabilities.
 
 ```
 "Merge the spec deltas from {change-dir} into the reference specs. Spec root: {spec-root}"

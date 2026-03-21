@@ -6,17 +6,32 @@
 
 ## Requirements
 
+<!-- GIVEN guidance:
+     Use GIVEN when the scenario depends on setup or state. Omit when there is none.
+
+     Good GIVEN (precondition matters):
+       Given a user with expired credentials
+       When the user attempts login
+       Then the system rejects the attempt
+
+     No GIVEN needed (no precondition):
+       When the user runs `spexl --version`
+       Then the system prints the version string
+
+     Smell: if your When contains "and X exists" or "in a project with no Y",
+     extract that to Given. When should be the action only. -->
+
 ### Requirement: [Requirement name]
 
 The system SHALL [requirement].
 
 #### Scenario: [descriptive name]
-  Given [precondition] <!-- optional -->
+  Given [precondition or system state]
   When [action]
   Then [expected outcome]
 
 #### Scenario: [error case]
-  Given [precondition] <!-- optional -->
+  Given [precondition or system state]
   When [invalid action]
   Then [error behavior]
 

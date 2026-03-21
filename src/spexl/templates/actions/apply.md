@@ -33,7 +33,7 @@ Work through the implementation:
 
 ### 4. Verify
 
-Write tests alongside implementation -- not after. Spec scenarios translate directly to test cases. See [verification.md](verification.md) for test strategies, annotation conventions, and coverage expectations.
+Write tests alongside implementation -- not after. Spec scenarios translate directly to test cases. Run `spexl context verification` for test strategies, annotation conventions, and coverage expectations.
 
 Every requirement needs at least one test. Every non-trivial scenario needs a corresponding test. Tests are annotated with `# spec:` comments linking back to the spec.
 

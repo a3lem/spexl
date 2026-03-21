@@ -1,6 +1,19 @@
-# Critique Reference
+# Critique
 
-Checklists and exploration patterns for the spec-critic agent.
+The **spec-critic** agent (sonnet) provides adversarial review.
+
+| Mode | Checks |
+|------|--------|
+| `intra-spec` | Coherence within the spec |
+| `spec-code` | Alignment with the codebase |
+| `inter-spec` | Consistency across specs |
+| `all` | All three |
+
+**Verdicts:** `approved` | `approved-with-reservations` | `needs-work` | `blocked`
+
+**When `needs-work` or `blocked`:** Address concerns, resume the agent, repeat. Escalate to user after 5 rounds.
+
+---
 
 ## Intra-Spec Mode: Does the Spec Make Sense?
 

@@ -6,7 +6,7 @@ Create a new change and generate all artifacts in one flow: proposal â†’ specs â
 
 ### Monorepo
 
-In a monorepo, each sub-project has its own `specs/` directory next to its code. `spectl` discovers them with `-r` (recursive walk from the current directory). Use `--dir` to target a specific `specs/` directory explicitly.
+In a monorepo, each sub-project has its own `specs/` directory next to its code. `spexl changes -r` discovers them (recursive walk from the current directory). Use `--dir` to target a specific `specs/` directory explicitly.
 
 No central config file is needed. Each `specs/` directory is self-contained with its own `reference/` and `changes/`.
 
@@ -26,7 +26,7 @@ Slugify the description:
 
 ## 3. Write Proposal
 
-The first artifact is `proposal.md`. Use `templates/proposal.md`.
+The first artifact is `proposal.md`. Run `spexl template proposal` for the template.
 
 The template has four sections: **Why**, **What Changes**, **Capabilities**, **Impact**. Keep it concise (1-2 pages). Focus on the "why" not the "how" --implementation details belong in design.md.
 
@@ -46,19 +46,19 @@ These are not in the template by default. Add them when they carry real informat
 
 ## 4. Write Specs
 
-After the proposal, proceed to per-capability spec deltas. Read [spec.md](spec.md) for notation and structure guidance.
+After the proposal, proceed to per-capability spec deltas. Run `spexl context spec-notation` for notation and structure guidance.
 
-One `spec.md` per capability listed in the proposal's Capabilities section, using `templates/spec-delta.md`.
+One `spec.md` per capability listed in the proposal's Capabilities section. Run `spexl template spec-delta` for the template.
 
 ## 5. Write Design (optional)
 
-For features with multiple valid approaches or architectural decisions that need user input. Read [design.md](design.md) for guidance.
+For features with multiple valid approaches or architectural decisions that need user input. Run `spexl context design` for guidance.
 
 **Skip for:** simple features, bug fixes, obvious implementations.
 
 ## 6. Write Tasks (optional)
 
-For changes with 3+ implementation steps or multi-session work. Read [tasks.md](tasks.md) for guidance. Use `templates/tasks.md`.
+For changes with 3+ implementation steps or multi-session work. Run `spexl context tasks` for guidance. Run `spexl template tasks` for the template.
 
 **Skip for:** simple specs where the spec itself is sufficient.
 
