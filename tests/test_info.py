@@ -100,3 +100,35 @@ def test_info_no_match_hints_archived(spec_root):
     rc, out, err = run_spexl("info", "nonexistent", "--cwd", str(spec_root.parent), cwd=spec_root.parent)
     assert rc == 1
     assert "--archived" in err
+
+
+def test_info_finds_change_in_sub_project(tmp_path):
+    """info should find changes in sub-project spec roots, not just the nearest one."""
+    # Root project
+    root = tmp_path
+    (root / ".spexl.toml").write_text("")
+    root_specs = root / "specs"
+    root_specs.mkdir()
+    (root_specs / "changes").mkdir()
+    (root_specs / "reference").mkdir()
+
+    # Sub-project with its own .spexl.toml
+    sub = root / "sub"
+    sub.mkdir()
+    (sub / ".spexl.toml").write_text("")
+    sub_specs = sub / "specs"
+    sub_specs.mkdir()
+    (sub_specs / "changes").mkdir()
+    (sub_specs / "reference").mkdir()
+
+    make_change(sub_specs, "sub-feature", id="sub01", proposal=True)
+
+    # Run info from the root – should find the sub-project's change
+    rc, out, err = run_spexl("info", "sub-feature", "--cwd", str(root), cwd=root)
+    assert rc == 0
+    assert "sub-feature (sub01)" in out
+
+    # Also resolve by id
+    rc, out, err = run_spexl("info", "sub01", "--cwd", str(root), cwd=root)
+    assert rc == 0
+    assert "sub-feature" in out

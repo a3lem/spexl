@@ -91,8 +91,6 @@ def main() -> None:
 
     # Commands that don't need spec root discovery
     no_root_commands = {
-        links.cmd_link,
-        links.cmd_unlink,
         steering.cmd_prime,
         steering.cmd_explain,
         steering.cmd_template,
@@ -102,6 +100,10 @@ def main() -> None:
     # Commands that handle their own discovery via args
     discovery_commands = {
         changes.cmd_changes,
+        changes.cmd_info,
+        changes.cmd_archive,
+        links.cmd_link,
+        links.cmd_unlink,
         refs.cmd_refs,
         validate.cmd_validate,
     }

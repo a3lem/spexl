@@ -5,39 +5,49 @@ import os
 import typing as T
 from pathlib import Path
 
+from spexl.config import ProjectConfig, discover_all_configs, discover_single_config
 from spexl.errors import SpexlError
-from spexl.specroot import read_change_json, write_change_json
+from spexl.specroot import read_change_json, resolve_change, write_change_json
 
 
 def register(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     p_link = subparsers.add_parser("link", help="Link two changes across spec roots")
-    p_link.add_argument("change_a", help="Path to first change directory")
-    p_link.add_argument("change_b", help="Path to second change directory")
+    p_link.add_argument("change_a", help="Change slug, id, or path")
+    p_link.add_argument("change_b", help="Change slug, id, or path")
     p_link.set_defaults(func=cmd_link)
 
     p_unlink = subparsers.add_parser(
         "unlink", help="Remove link between two changes"
     )
-    p_unlink.add_argument("change_a", help="Path to first change directory")
-    p_unlink.add_argument("change_b", help="Path to second change directory")
+    p_unlink.add_argument("change_a", help="Change slug, id, or path")
+    p_unlink.add_argument("change_b", help="Change slug, id, or path")
     p_unlink.set_defaults(func=cmd_unlink)
 
 
-def cmd_link(args: T.Any) -> None:
-    path_a = Path(args.change_a)
-    path_b = Path(args.change_b)
+def _resolve_change_identifier(
+    identifier: str, start: Path | None
+) -> tuple[Path, ProjectConfig]:
+    """Resolve a change identifier (path, slug, or id) across all configs."""
+    configs = discover_all_configs(start)
+    if not configs:
+        configs = [discover_single_config(start)]
 
-    if not path_a.is_dir():
-        raise SpexlError(f"Path not found: {path_a}")
-    if not path_b.is_dir():
-        raise SpexlError(f"Path not found: {path_b}")
+    for cfg in configs:
+        try:
+            change_path = resolve_change(cfg.changes_path, identifier)
+            return change_path, cfg
+        except SpexlError:
+            continue
+
+    raise SpexlError(f"Change not found: '{identifier}'.")
+
+
+def cmd_link(args: T.Any, start: Path | None = None) -> None:
+    path_a, config_a = _resolve_change_identifier(args.change_a, start)
+    path_b, config_b = _resolve_change_identifier(args.change_b, start)
 
     cj_a_path = path_a / ".change.json"
     cj_b_path = path_b / ".change.json"
-    if not cj_a_path.is_file():
-        raise SpexlError(f"No .change.json in {path_a}")
-    if not cj_b_path.is_file():
-        raise SpexlError(f"No .change.json in {path_b}")
 
     data_a = read_change_json(cj_a_path)
     data_b = read_change_json(cj_b_path)
@@ -66,21 +76,12 @@ def cmd_link(args: T.Any) -> None:
     print(f"Linked {path_a.name} <-> {path_b.name}")
 
 
-def cmd_unlink(args: T.Any) -> None:
-    path_a = Path(args.change_a)
-    path_b = Path(args.change_b)
-
-    if not path_a.is_dir():
-        raise SpexlError(f"Path not found: {path_a}")
-    if not path_b.is_dir():
-        raise SpexlError(f"Path not found: {path_b}")
+def cmd_unlink(args: T.Any, start: Path | None = None) -> None:
+    path_a, _ = _resolve_change_identifier(args.change_a, start)
+    path_b, _ = _resolve_change_identifier(args.change_b, start)
 
     cj_a_path = path_a / ".change.json"
     cj_b_path = path_b / ".change.json"
-    if not cj_a_path.is_file():
-        raise SpexlError(f"No .change.json in {path_a}")
-    if not cj_b_path.is_file():
-        raise SpexlError(f"No .change.json in {path_b}")
 
     data_a = read_change_json(cj_a_path)
     data_b = read_change_json(cj_b_path)

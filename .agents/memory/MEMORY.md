@@ -8,4 +8,5 @@
 - [feedback_naming.md](feedback_naming.md) - Avoid vague module names like plumbing.py or utils.py
 - [feedback_design_principles.md](feedback_design_principles.md) - Pre-alpha (no deprecation concerns) + self-contained skills with compositional CLI
 - [user_working_style.md](user_working_style.md) - Adriaan designs before implementing; engage with architecture first
+- [feedback_subdir_id_resolution.md](feedback_subdir_id_resolution.md) - Commands taking a change ID must resolve across all sub-project spec roots
 - [reference_cli_help_formatting.md](reference_cli_help_formatting.md) - How spexl's CLI help is customized - _Formatter and _Parser subclasses in __init__.py

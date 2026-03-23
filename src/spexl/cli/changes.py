@@ -185,10 +185,42 @@ def _filter_linked(
     return result
 
 
-def cmd_info(args: T.Any, config: ProjectConfig) -> None:
-    changes_dir = config.changes_path
+def _resolve_across_configs(
+    identifier: str,
+    start: Path | None,
+    include_archived: bool = False,
+) -> tuple[Path, ProjectConfig]:
+    """Resolve a change identifier across all discovered configs.
+
+    Returns (change_path, matched_config).
+    """
+    configs = discover_all_configs(start)
+    if not configs:
+        configs = [discover_single_config(start)]
+
+    for cfg in configs:
+        try:
+            change_path = resolve_change(
+                cfg.changes_path, identifier, include_archived
+            )
+            return change_path, cfg
+        except SpexlError:
+            continue
+
+    hint = (
+        " Try --archived to include archived changes."
+        if not include_archived
+        else ""
+    )
+    raise SpexlError(f"No change found matching '{identifier}'.{hint}")
+
+
+def cmd_info(args: T.Any, start: Path | None = None) -> None:
     include_archived = getattr(args, "archived", False)
-    change_path = resolve_change(changes_dir, args.identifier, include_archived)
+    change_path, matched_config = _resolve_across_configs(
+        args.identifier, start, include_archived
+    )
+
     cj_path = change_path / ".change.json"
 
     data = read_change_json(cj_path)
@@ -221,7 +253,7 @@ def cmd_info(args: T.Any, config: ProjectConfig) -> None:
     raw_links = data.get("links", [])
     if raw_links:
         for link in raw_links:
-            result = resolve_link(config.specs_dir, link)
+            result = resolve_link(matched_config.specs_dir, link)
             if result:
                 target_path, target_data = result
                 resolved_links.append({
@@ -253,9 +285,9 @@ def cmd_info(args: T.Any, config: ProjectConfig) -> None:
     output(info, format_info, args)
 
 
-def cmd_archive(args: T.Any, config: ProjectConfig) -> None:
+def cmd_archive(args: T.Any, start: Path | None = None) -> None:
+    change_path, config = _resolve_across_configs(args.identifier, start)
     changes_dir = config.changes_path
-    change_path = resolve_change(changes_dir, args.identifier)
 
     if args.rejected:
         reason = "rejected"
