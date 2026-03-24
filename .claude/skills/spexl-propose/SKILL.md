@@ -3,7 +3,7 @@ name: spexl-propose
 description: This skill should be used when the user asks to "propose a change", "create a spec", "start a new feature", "define requirements", or wants to create a formal specification for a new capability or modification.
 metadata:
   generated_by: spexl 0.1.0
-  generated_on: 2026-03-20
+  generated_on: 2026-03-24
 ---
 
 # Propose

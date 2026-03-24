@@ -130,3 +130,32 @@ def test_changes_linked_archived(spec_root):
     assert rc == 0
     assert "arc02" in out
     assert "arc01" not in out
+
+
+# spec: cli requirement=changes-output-formatting
+def test_changes_shows_relative_path(spec_root):
+    make_change(spec_root, "add-oauth", id="x7k2m")
+    rc, out, err = run_spexl("changes", "--cwd", str(spec_root.parent), cwd=spec_root.parent)
+    assert rc == 0
+    assert "./" in out
+    # Should not contain absolute path or specs/changes/
+    assert "specs/changes" not in out
+
+
+# spec: cli requirement=changes-output-formatting
+def test_changes_relative_path_in_monorepo(tmp_path):
+    (tmp_path / ".spexl.toml").write_text("")
+    for project in ("proj-a", "proj-b"):
+        proj_dir = tmp_path / project
+        proj_dir.mkdir()
+        (proj_dir / ".spexl.toml").write_text("")
+        specs = proj_dir / "specs"
+        (specs / "changes").mkdir(parents=True)
+        (specs / "reference").mkdir()
+        make_change(specs, f"{project}-change", id=f"{project}1")
+
+    rc, out, err = run_spexl("changes", cwd=tmp_path)
+    assert rc == 0
+    assert "./proj-a/" in out or "proj-a" in out
+    assert "./proj-b/" in out or "proj-b" in out
+    assert str(tmp_path) not in out  # no absolute paths

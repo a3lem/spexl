@@ -131,3 +131,25 @@ def test_archive_resolve_by_id(spec_root):
     rc, out, err = run_spexl("archive", "x7k2m", "--cwd", str(spec_root.parent), cwd=spec_root.parent)
     assert rc == 0
     assert not (spec_root / "changes" / "add-oauth").exists()
+
+
+def test_archive_resolves_sub_project_by_id(tmp_path):
+    """archive should find a change in a sub-project by id."""
+    root = tmp_path
+    (root / ".spexl.toml").write_text("")
+    (root / "specs" / "changes").mkdir(parents=True)
+    (root / "specs" / "reference").mkdir()
+
+    sub = root / "sub"
+    sub.mkdir()
+    (sub / ".spexl.toml").write_text("")
+    sub_specs = sub / "specs"
+    (sub_specs / "changes").mkdir(parents=True)
+    (sub_specs / "reference").mkdir()
+
+    make_change(sub_specs, "sub-feature", id="sub01")
+
+    rc, out, err = run_spexl("archive", "sub01", "--cwd", str(root), cwd=root)
+    assert rc == 0
+    assert not (sub_specs / "changes" / "sub-feature").exists()
+    assert (sub_specs / "changes" / "archive").is_dir()

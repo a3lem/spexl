@@ -282,3 +282,143 @@ The system SHALL validate that the `skip` field in `.change.json` contains only 
 - **GIVEN** a `.change.json` with `"skip": ["design"]`
 - **WHEN** the user runs `spexl validate`
 - **THEN** no skip-related errors are reported
+
+### Requirement: Change identifier resolution
+The system SHALL resolve change identifiers by trying path, slug, and id in that order. Commands that accept a change identifier (`info`, `archive`, `link`, `unlink`) SHALL search across all spec roots discovered by walking down from the starting directory. This means a change in a sub-project can be referenced by its slug or id from any ancestor directory.
+
+#### Scenario: Resolve by slug
+- **GIVEN** a change directory named `add-oauth`
+- **WHEN** the user passes `add-oauth` as the identifier
+- **THEN** the system resolves to that change directory
+
+#### Scenario: Resolve by id
+- **GIVEN** a change with `"id": "x7k2m"` in `.change.json`
+- **WHEN** the user passes `x7k2m` as the identifier
+- **THEN** the system resolves to that change directory
+
+#### Scenario: Resolve by path
+- **WHEN** the user passes a path containing `/` as the identifier
+- **THEN** the system checks if the path is a directory and returns it directly
+
+#### Scenario: Resolve across sub-projects
+- **GIVEN** a monorepo with spec roots at `proj-a/` and `proj-b/`
+- **WHEN** the user runs `spexl info <id>` from the monorepo root where `<id>` belongs to a change in `proj-b/`
+- **THEN** the system finds the change in `proj-b/`
+
+#### Scenario: No match
+- **WHEN** the identifier matches no change in any discovered spec root
+- **THEN** the system prints an error and exits 1
+
+### Requirement: Change info command
+The system SHALL support `spexl info <identifier>` to display an overview of a change, including its slug, id, creation date, artifacts present, delta capabilities, task progress, and resolved links. The `--archived` flag extends the search to archived changes. The `--json` flag outputs structured JSON.
+
+#### Scenario: Info output
+- **GIVEN** a change with proposal, design, tasks (3/5 complete), and a delta for `user-auth`
+- **WHEN** the user runs `spexl info <slug>`
+- **THEN** the output includes the slug, id, creation date, artifact list, delta list, and task progress
+
+#### Scenario: Info with JSON
+- **WHEN** the user runs `spexl info <slug> --json`
+- **THEN** the output is a JSON object with fields: slug, id, created, artifacts, deltas, tasks
+
+#### Scenario: Info on archived change
+- **GIVEN** an archived change
+- **WHEN** the user runs `spexl info <slug> --archived`
+- **THEN** the output includes the archived reason
+
+#### Scenario: Info with resolved links
+- **GIVEN** a change linked to another change in a different spec root
+- **WHEN** the user runs `spexl info <slug>`
+- **THEN** the output includes a links section showing the linked change's id, slug, and status
+
+#### Scenario: Info with broken link
+- **GIVEN** a change with a link pointing to a nonexistent spec root
+- **WHEN** the user runs `spexl info <slug>`
+- **THEN** the output shows the link as `[broken]`
+
+### Requirement: Archive command
+The system SHALL support `spexl archive <identifier>` to archive a completed change. Archiving writes `"archived": {"reason": "merged"}` to `.change.json`, prints a sync summary of delta operations, and moves the change directory to `changes/archive/<date>-<slug>/`. The `--rejected` flag archives without a sync summary. The `--force` flag archives even with incomplete tasks. The `--dry-run` flag prints the sync summary without moving files.
+
+#### Scenario: Archive with sync summary
+- **GIVEN** a change with deltas containing ADDED and MODIFIED requirements
+- **WHEN** the user runs `spexl archive <slug>`
+- **THEN** the system prints a sync summary listing requirement counts per section per capability
+- **AND** moves the change to `changes/archive/<date>-<slug>/`
+
+#### Scenario: Incomplete tasks block archive
+- **GIVEN** a change with unchecked tasks
+- **WHEN** the user runs `spexl archive <slug>` without `--force`
+- **THEN** the system prints an error about incomplete tasks and exits 1
+
+#### Scenario: Archive warns about active links
+- **GIVEN** a change linked to another active change
+- **WHEN** the user runs `spexl archive <slug>`
+- **THEN** the system prints a warning listing the linked changes that are still active
+
+#### Scenario: Dry run
+- **WHEN** the user runs `spexl archive <slug> --dry-run`
+- **THEN** the system prints the sync summary but does not move files
+
+#### Scenario: Archive as rejected
+- **WHEN** the user runs `spexl archive <slug> --rejected`
+- **THEN** the system writes `"archived": {"reason": "rejected"}` and skips the sync summary
+
+### Requirement: Link command
+The system SHALL support `spexl link <identifier-a> <identifier-b>` to create a bidirectional link between two changes. Each change's `.change.json` gets a `links` entry with the relative path to the other's spec root and the other's change id. Linking is idempotent.
+
+#### Scenario: Basic link
+- **GIVEN** two changes in different spec roots
+- **WHEN** the user runs `spexl link <a> <b>`
+- **THEN** both `.change.json` files contain a `links` entry pointing to the other change
+- **AND** the `specs` field in each link is a relative path from one spec root to the other
+
+#### Scenario: Idempotent link
+- **GIVEN** two changes already linked
+- **WHEN** the user runs `spexl link <a> <b>` again
+- **THEN** no duplicate link entries are created
+
+#### Scenario: Link nonexistent change
+- **WHEN** one of the identifiers does not resolve to a change
+- **THEN** the system prints an error and exits 1
+
+### Requirement: Unlink command
+The system SHALL support `spexl unlink <identifier-a> <identifier-b>` to remove a bidirectional link between two changes. The `links` key is removed from `.change.json` when the array becomes empty. Unlinking changes that are not linked succeeds silently.
+
+#### Scenario: Basic unlink
+- **GIVEN** two linked changes
+- **WHEN** the user runs `spexl unlink <a> <b>`
+- **THEN** both `.change.json` files no longer contain the link to the other
+
+#### Scenario: Unlink removes empty links key
+- **GIVEN** a change with exactly one link
+- **WHEN** that link is removed via `spexl unlink`
+- **THEN** the `links` key is removed from `.change.json` entirely, not left as an empty array
+
+#### Scenario: Unlink when not linked
+- **GIVEN** two changes that are not linked
+- **WHEN** the user runs `spexl unlink <a> <b>`
+- **THEN** the system exits 0 without error
+
+### Requirement: Refs command
+The system SHALL support `spexl refs` to list all reference spec capabilities discovered across spec roots. By default, only capability names are shown. The `--long` (`-l`) flag includes the first line of each spec's `## Overview` section. The `--json` flag outputs structured JSON (always includes descriptions). The `--no-recurse` flag restricts discovery to the nearest spec root.
+
+#### Scenario: Default output
+- **GIVEN** reference specs for `billing` and `user-auth`
+- **WHEN** the user runs `spexl refs`
+- **THEN** the output lists capability names without descriptions
+
+#### Scenario: Long output
+- **WHEN** the user runs `spexl refs --long`
+- **THEN** the output includes capability names with their overview descriptions
+
+#### Scenario: No reference specs
+- **WHEN** the user runs `spexl refs` in a project with no reference specs
+- **THEN** the system prints "No reference specs"
+
+#### Scenario: Recursive discovery
+- **GIVEN** a monorepo with reference specs in multiple sub-projects
+- **WHEN** the user runs `spexl refs` from the root
+- **THEN** capabilities from all sub-projects are listed
+
+### Requirement: Changes output formatting
+The system SHALL display `spexl changes` output grouped by project directory. Group headers show the relative path from the working directory to the project directory (the parent of `specs/`). Archived groups are labeled with `(archived)`. Each change is listed with its id, status, and slug.

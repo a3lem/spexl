@@ -63,3 +63,24 @@ archive [spec slug]   → Sync deltas to reference + archive
 - [spec-kit](https://github.com/github/spec-kit)
 - [openspec](https://github.com/nicobailon/openspec)
 - [SDD tools (Fowler)](https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html)
+
+
+## Changelog and Versioning
+
+## Changelog
+
+Update CHANGELOG.md when committing notable changes.
+
+## Versioning and release
+
+1. Increment version number. Stick to 'zero-ver', as breaking changes are still possible.
+2. Update CHANGELOG.md: change `## [Unreleased]` to version + date
+3. Update `project.version=` in pyproject.toml.
+4. Commit and tag:
+   ```bash
+   git add <relevant files>
+   git commit -m "release: v0.4.0"
+   git tag v0.4.0
+   git push && git push origin v0.4.0
+   ```
+

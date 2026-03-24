@@ -3,7 +3,7 @@ name: spexl-apply
 description: This skill should be used when the user asks to "implement a spec", "apply a change", "build the feature", "start implementation", or wants to implement and verify a proposed spec change.
 metadata:
   generated_by: spexl 0.1.0
-  generated_on: 2026-03-20
+  generated_on: 2026-03-24
 ---
 
 # Apply

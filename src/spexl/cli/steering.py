@@ -102,12 +102,12 @@ def register(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) ->
     p_template.set_defaults(func=cmd_template)
 
 
-def cmd_prime(args: T.Any, root: T.Any = None) -> None:
+def cmd_prime(_args: T.Any) -> None:
     content = read_template("prime", "prime.md")
     print(content, end="")
 
 
-def cmd_explain(args: T.Any, root: T.Any = None) -> None:
+def cmd_explain(args: T.Any) -> None:
     if args.list_topics:
         for name, info in sorted(EXPLAIN_REGISTRY.items()):
             print(f"  {name:20s} {info['description']}")
@@ -131,7 +131,7 @@ def cmd_explain(args: T.Any, root: T.Any = None) -> None:
     print("\n\n---\n\n".join(parts))
 
 
-def cmd_template(args: T.Any, root: T.Any = None) -> None:
+def cmd_template(args: T.Any) -> None:
     if args.list_types:
         for name, info in sorted(ARTIFACT_REGISTRY.items()):
             print(f"  {name:20s} {info['description']}")

@@ -3,7 +3,7 @@ name: spexl-explore
 description: This skill should be used when the user asks to "explore an idea", "investigate a problem", "think through requirements", "research before proposing", or wants to explore ideas before committing to a formal spec change.
 metadata:
   generated_by: spexl 0.1.0
-  generated_on: 2026-03-20
+  generated_on: 2026-03-24
 ---
 
 # Explore

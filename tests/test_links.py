@@ -78,6 +78,31 @@ def test_link_idempotent(tmp_path):
     assert len(data_a["links"]) == 1  # not duplicated
 
 
+# spec: cli requirement=link-command scenario=link-by-id
+def test_link_by_id(tmp_path):
+    change_a, change_b, _, _ = make_monorepo(tmp_path)
+    rc, out, err = run_spexl("link", "abc12", "def34", cwd=tmp_path)
+    assert rc == 0
+    assert "Linked" in out
+
+    data_a = json.loads((change_a / ".change.json").read_text())
+    data_b = json.loads((change_b / ".change.json").read_text())
+    assert len(data_a["links"]) == 1
+    assert data_a["links"][0]["change"] == "def34"
+    assert len(data_b["links"]) == 1
+    assert data_b["links"][0]["change"] == "abc12"
+
+
+# spec: cli requirement=link-command scenario=link-by-slug
+def test_link_by_slug(tmp_path):
+    change_a, change_b, _, _ = make_monorepo(tmp_path)
+    rc, out, err = run_spexl("link", "add-oauth", "add-token-refresh", cwd=tmp_path)
+    assert rc == 0
+
+    data_a = json.loads((change_a / ".change.json").read_text())
+    assert len(data_a["links"]) == 1
+
+
 # spec: spectl requirement=link-changes scenario=link-to-nonexistent-change
 def test_link_nonexistent_path(tmp_path):
     change_a, _, _, _ = make_monorepo(tmp_path)
@@ -86,7 +111,26 @@ def test_link_nonexistent_path(tmp_path):
     assert "not found" in err.lower()
 
 
+def test_link_nonexistent_id(tmp_path):
+    make_monorepo(tmp_path)
+    rc, out, err = run_spexl("link", "abc12", "zzzzz", cwd=tmp_path)
+    assert rc == 1
+    assert "not found" in err.lower()
+
+
 # --- unlink-changes ---
+
+
+# spec: cli requirement=unlink-command scenario=unlink-by-id
+def test_unlink_by_id(tmp_path):
+    change_a, change_b, _, _ = make_monorepo(tmp_path)
+    run_spexl("link", str(change_a), str(change_b), cwd=tmp_path)
+    rc, out, err = run_spexl("unlink", "abc12", "def34", cwd=tmp_path)
+    assert rc == 0
+    assert "Unlinked" in out
+
+    data_a = json.loads((change_a / ".change.json").read_text())
+    assert "links" not in data_a
 
 
 # spec: spectl requirement=unlink-changes scenario=basic-unlink

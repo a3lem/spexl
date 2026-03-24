@@ -139,7 +139,7 @@ def generate_id() -> str:
 
 def count_incomplete_tasks(tasks_path: Path) -> int:
     """Count unchecked checkboxes in tasks.md."""
-    text = tasks_path.read_text() if isinstance(tasks_path, Path) else tasks_path
+    text = tasks_path.read_text()
     return len(re.findall(r"- \[ \]", text))
 
 
@@ -204,10 +204,11 @@ def parse_sync_summary(spec_path: Path) -> dict[str, int]:
     for line in text.splitlines():
         m = re.match(r"^## (ADDED|MODIFIED|REMOVED|RENAMED) Requirements", line)
         if m:
-            current_section = m.group(1).lower()
-            counts[current_section] = 0
+            section: str = m.group(1).lower()
+            current_section = section
+            counts[section] = 0
             continue
-        if current_section and re.match(r"^### Requirement:", line):
+        if current_section is not None and re.match(r"^### Requirement:", line):
             counts[current_section] += 1
 
     return counts
@@ -227,7 +228,8 @@ def output(
 def format_change_groups(groups: list[dict[str, T.Any]]) -> str:
     lines = []
     for group in groups:
-        lines.append(f"{group['path']}/")
+        suffix = " (archived)" if group.get("archived") else ""
+        lines.append(f"{group['path']}/{suffix}")
         for c in group["changes"]:
             cid = c.get("id", "")
             status = c.get("status", "") or c.get("reason", "")
@@ -264,9 +266,13 @@ def format_info(info: dict[str, T.Any]) -> str:
     return "\n".join(lines)
 
 
-def format_refs(refs: list[dict[str, str]]) -> str:
-    lines = ["specs/reference/"]
-    for r in refs:
-        desc = f" - {r['description']}" if r["description"] else ""
-        lines.append(f"  {r['name']}{desc}")
+def format_ref_groups(groups: list[dict[str, T.Any]], long: bool = False) -> str:
+    lines: list[str] = []
+    for group in groups:
+        lines.append(f"{group['path']}/")
+        for r in group["refs"]:
+            if long and r["description"]:
+                lines.append(f"  {r['name']} - {r['description']}")
+            else:
+                lines.append(f"  {r['name']}")
     return "\n".join(lines)

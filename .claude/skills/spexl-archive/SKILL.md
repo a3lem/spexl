@@ -3,7 +3,7 @@ name: spexl-archive
 description: This skill should be used when the user asks to "archive a change", "merge deltas", "finalize a spec", "complete a change", or wants to merge spec deltas into reference specs and archive the change.
 metadata:
   generated_by: spexl 0.1.0
-  generated_on: 2026-03-20
+  generated_on: 2026-03-24
 ---
 
 # Archive

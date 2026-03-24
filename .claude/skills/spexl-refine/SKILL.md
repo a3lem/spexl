@@ -3,7 +3,7 @@ name: spexl-refine
 description: This skill should be used when the user asks to "refine a spec", "update the proposal", "modify the design", "change requirements", or wants to update any existing spec artifact.
 metadata:
   generated_by: spexl 0.1.0
-  generated_on: 2026-03-20
+  generated_on: 2026-03-24
 ---
 
 # Refine

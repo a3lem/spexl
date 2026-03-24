@@ -2,15 +2,18 @@
 # Context: cli-help-cleanup
 # Intent: clean CLI help with commands listed under a single "commands:" title
 
+from __future__ import annotations
+
 import argparse
 import os
 import sys
+import typing as T
 from pathlib import Path
 
 import importlib.metadata
 
 from spexl.cli import changes, generate, links, refs, steering, validate
-from spexl.config import ProjectConfig, discover_all_configs, discover_single_config
+from spexl.config import discover_single_config
 from spexl.errors import SpexlError
 
 
@@ -68,7 +71,10 @@ def main() -> None:
         metavar="PROJECT_DIR",
     )
 
-    subs = parser.add_subparsers(dest="command", title="commands")
+    subs = T.cast(
+        "argparse._SubParsersAction[argparse.ArgumentParser]",
+        parser.add_subparsers(dest="command", title="commands"),
+    )
 
     changes.register(subs)
     links.register(subs)

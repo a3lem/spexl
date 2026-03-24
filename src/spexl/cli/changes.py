@@ -130,6 +130,17 @@ def cmd_new(args: T.Any, config: ProjectConfig) -> None:
     print(f"Created {change_path}/ (id: {change_json['id']})")
 
 
+def relative_display_path(target: Path, base: Path) -> str:
+    """Return a './' prefixed relative path from base to target."""
+    try:
+        rel = os.path.relpath(target, base)
+    except ValueError:
+        return str(target)
+    if rel == ".":
+        return "."
+    return f"./{rel}" if not rel.startswith("..") else rel
+
+
 def cmd_changes(args: T.Any, start: Path | None = None) -> None:
     show_archived = getattr(args, "archived", False)
     show_all = getattr(args, "show_all", False)
@@ -144,9 +155,12 @@ def cmd_changes(args: T.Any, start: Path | None = None) -> None:
             print("No changes")
             return
 
+    base = start or Path.cwd()
+
     all_groups: list[dict[str, T.Any]] = []
     for cfg in configs:
         changes_dir = cfg.changes_path
+        rel_path = relative_display_path(cfg.project_dir, base)
 
         if not show_archived:
             if changes_dir.is_dir():
@@ -154,7 +168,7 @@ def cmd_changes(args: T.Any, start: Path | None = None) -> None:
                 if linked_only:
                     active = _filter_linked(changes_dir, active)
                 if active:
-                    all_groups.append({"path": str(changes_dir), "changes": active})
+                    all_groups.append({"path": rel_path, "changes": active})
 
         if show_archived or show_all:
             archive_dir = changes_dir / "archive"
@@ -163,7 +177,7 @@ def cmd_changes(args: T.Any, start: Path | None = None) -> None:
                 if linked_only:
                     archived = _filter_linked(archive_dir, archived)
                 if archived:
-                    all_groups.append({"path": str(archive_dir), "changes": archived})
+                    all_groups.append({"path": rel_path, "archived": True, "changes": archived})
 
     if not all_groups:
         print("No changes")
@@ -249,15 +263,19 @@ def cmd_info(args: T.Any, start: Path | None = None) -> None:
 
     archived = data.get("archived")
 
+    base = start or Path.cwd()
     resolved_links: list[dict[str, T.Any]] = []
     raw_links = data.get("links", [])
     if raw_links:
         for link in raw_links:
             result = resolve_link(matched_config.specs_dir, link)
             if result:
-                target_path, target_data = result
+                target_path, _ = result
+                # target_path is .../specs/changes/<slug>, project dir is 3 levels up
+                target_project = target_path.resolve().parent.parent.parent
+                display_path = relative_display_path(target_project, base)
                 resolved_links.append({
-                    "specs": link["specs"],
+                    "specs": display_path,
                     "change": link["change"],
                     "slug": target_path.name,
                     "status": compute_status(target_path),

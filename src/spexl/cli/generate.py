@@ -80,7 +80,7 @@ def _scaffold_project(project_root: Path) -> None:
     print("\nProject initialized.")
 
 
-def cmd_init(args: T.Any, root: T.Any = None) -> None:
+def cmd_init(args: T.Any) -> None:
     if args.remove:
         _do_remove()
         return
@@ -187,7 +187,7 @@ def _do_install(
     print(f"\n{created} files created")
 
 
-def _do_refresh(project_root: Path, install_path: Path, target: str) -> None:
+def _do_refresh(project_root: Path, install_path: Path, _target: str) -> None:
     """Idempotent refresh: overwrite only files whose content differs."""
     files = _managed_files(install_path)
     changed = 0
@@ -218,7 +218,7 @@ def _do_remove() -> None:
     project_root = config_path.parent
     removed = 0
 
-    for target_name, target_config in config.get("agents", {}).items():
+    for _, target_config in config.get("agents", {}).items():
         install_path = Path(target_config["install_path"])
         files = _managed_files(install_path)
         for rel_path in files:

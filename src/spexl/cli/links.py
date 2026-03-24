@@ -43,8 +43,8 @@ def _resolve_change_identifier(
 
 
 def cmd_link(args: T.Any, start: Path | None = None) -> None:
-    path_a, config_a = _resolve_change_identifier(args.change_a, start)
-    path_b, config_b = _resolve_change_identifier(args.change_b, start)
+    path_a, _ = _resolve_change_identifier(args.change_a, start)
+    path_b, _ = _resolve_change_identifier(args.change_b, start)
 
     cj_a_path = path_a / ".change.json"
     cj_b_path = path_b / ".change.json"
