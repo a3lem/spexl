@@ -39,3 +39,7 @@ This probably works just as well:
 ```
 
 ---
+
+`spexl changes --deltas` should show the ref specs impacted (name + rel path)
+
+`spexl refs --changes` should show which ref specs are targeted by active changes.

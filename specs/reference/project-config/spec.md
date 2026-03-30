@@ -73,6 +73,24 @@ The system SHALL resolve `install_path` by walking UP from the current directory
 - **WHEN** spexl attempts to resolve the install path
 - **THEN** the system errors with a message indicating no install path is configured
 
+### Requirement: Walk-down recursive discovery
+Spec discovery (`changes`, `refs`, `validate`) SHALL walk DOWN recursively from the starting directory, collecting every `.spexl.toml` found at any depth. Directories named `node_modules`, `.venv`, `.git`, `__pycache__`, or `archive` SHALL be skipped during the walk. The walk does not stop when it encounters a `.spexl.toml` – it continues into subdirectories to find nested spec roots.
+
+#### Scenario: Nested spec roots at arbitrary depth
+- **GIVEN** a directory tree `A/B/C/` where `A/.spexl.toml` and `A/B/C/.spexl.toml` both exist
+- **WHEN** `spexl changes` is run from directory `A`
+- **THEN** changes from both `A` and `A/B/C` are listed, grouped by project path
+
+#### Scenario: Intermediate directory without marker
+- **GIVEN** a directory tree `A/B/C/` where only `A/.spexl.toml` and `A/B/C/.spexl.toml` exist (B has no marker)
+- **WHEN** `spexl changes` is run from directory `B`
+- **THEN** only changes from `A/B/C` are shown (walk-down finds C but does not walk up to A)
+
+#### Scenario: Skipped directory names
+- **GIVEN** a directory tree where a `.spexl.toml` exists inside a directory named `archive` or `node_modules`
+- **WHEN** spec discovery walks down
+- **THEN** that `.spexl.toml` is NOT discovered (the parent directory name causes it to be skipped)
+
 ### Requirement: Walk-up boundary
 For init and agent installation, the system SHALL walk up and stop when it encounters a `.spexl.toml` that declares `install_path` for the requested agent, OR when it reaches a `.git` directory (repository root), whichever comes first. Spec discovery (`changes`, `refs`, `validate`) does not walk up.
 

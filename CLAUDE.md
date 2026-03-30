@@ -71,6 +71,8 @@ archive [spec slug]   → Sync deltas to reference + archive
 
 Update CHANGELOG.md when committing notable changes.
 
+Items should start with verbs like 'added', 'removed', 'fixed', 'improved', 'changed', etc.
+
 ## Versioning and release
 
 1. Increment version number. Stick to 'zero-ver', as breaking changes are still possible.
