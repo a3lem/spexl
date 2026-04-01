@@ -4,47 +4,11 @@ How to write and refine specifications using requirements and scenarios.
 
 **Prerequisite:** Spec directory must already exist (see Initialize phase).
 
-## Spec Structure
+## Where Specs Live
 
-Specifications live in two locations:
+Specs live in `specs/reference/<capability>/spec.md` (current behavior) and `specs/changes/<slug>/deltas/<capability>/spec.md` (proposed changes). Each delta maps 1:1 to the reference spec it targets: `deltas/user-auth/spec.md` modifies `reference/user-auth/spec.md`.
 
-- **`specs/reference/`** -- how things work today (the official record)
-- **`specs/changes/slug/deltas/`** -- what's changing, one directory per affected capability
-
-### Reference Specs
-
-A reference spec says how a component or feature should work. It's the official record.
-
-```
-specs/reference/
-├── authentication/
-│   └── spec.md
-├── billing/
-│   └── spec.md
-└── notifications/
-    └── spec.md
-```
-
-Use `templates/reference-spec.md` as a starting point.
-
-### Spec Deltas (What's Changing)
-
-Each change directory has a `deltas/` subdirectory with one directory per affected capability. Each delta maps 1:1 to the reference spec it modifies (or creates). The directory name matches: `deltas/user-auth/spec.md` targets `specs/reference/user-auth/spec.md`.
-
-```
-specs/changes/add-oauth/
-├── proposal.md
-├── deltas/
-│   ├── session-management/
-│   │   └── spec.md
-│   └── user-auth/
-│       └── spec.md
-├── design.md
-├── tasks.md
-└── notes/
-```
-
-Use `templates/spec-delta.md` as a starting point for each capability's `spec.md`.
+Use `spexl template reference-spec` and `spexl template spec-delta` for starting templates.
 
 ## Mode Detection
 

@@ -25,73 +25,19 @@ implementation makes it real
 
 ## Specs
 
-A spec is a behavioral contract. It states what the system does using requirements and scenarios.
+A spec is a behavioral contract. It states what the system does using **requirements** (SHALL statements with EARS qualifiers) and **scenarios** (Given/When/Then). Requirements declare rules; scenarios prove the rules hold with concrete examples. Together they form a testable contract. Scenarios map directly to tests.
 
-```markdown
-### Requirement: Session Timeout
-The system SHALL expire sessions after 30 minutes of inactivity.
+A spec lives in `spec.md` and serves double duty: in `reference/` it describes what *is* built, in `deltas/` it describes what *is to be* built. This is why they're called specs, not requirements -- a spec works in both tenses.
 
-#### Scenario: Idle timeout
-  Given an authenticated session
-  When 30 minutes pass without activity
-  Then the session is invalidated
-```
-
-Requirements use SHALL statements (from requirements engineering). Scenarios use Given/When/Then (from BDD). The combination gives precision and testability.
-
-### Requirements and Scenarios
-
-A **requirement** declares a rule: what the system must do. It uses SHALL with EARS qualifiers (WHEN, IF, WHILE, WHERE) to state the condition and the expected behavior.
-
-A **scenario** is a concrete example of a requirement in action. It sets up a specific situation (Given), performs an action (When), and asserts an observable outcome (Then). Where a requirement says "the system SHALL do X," a scenario says "in *this* situation, here's what X looks like." Scenarios map directly to tests -- see [Verification](#verification).
-
-Requirements without scenarios are unverifiable. Scenarios without requirements lack context. Together, they form a testable contract: the requirement states the rule, the scenario proves it holds.
-
-Each scenario should test one behavior, use concrete values ("30 minutes" not "a period of time"), and produce an observable outcome. A requirement typically has multiple scenarios covering the happy path, error cases, and boundary conditions.
-
-A spec lives in `spec.md` and serves double duty:
-
-- In `reference/`: describes what *is* built
-- In `deltas/`: describes what *is to be* built
-
-This is why they're called specs, not requirements. A requirement implies something yet to be fulfilled. A spec works in both tenses.
+For notation details (SHALL/EARS patterns, Given/When/Then structure, choosing notation), run `spexl explain spec-notation`.
 
 ### Capabilities
 
-Specs are organized by capability -- a logical grouping of related behavior.
-
-```
-reference/
-├── authentication/
-│   └── spec.md
-├── billing/
-│   └── spec.md
-└── notifications/
-    └── spec.md
-```
-
-A capability is a domain concept, not a code module. `authentication` might touch controllers, middleware, database models, and background jobs. The spec describes the behavior; design and code decide where it lives.
+Specs are organized by capability -- a logical grouping of related behavior (e.g., `authentication`, `billing`). A capability is a domain concept, not a code module. The spec describes the behavior; design and code decide where it lives.
 
 ## Changes
 
-A change is a proposed modification to the system. It lives in a folder under `changes/` and contains everything needed to understand, review, and implement the modification.
-
-```
-changes/add-oauth/
-├── proposal.md          Why this change exists
-├── deltas/              What's changing (per-capability)
-│   ├── authentication/
-│   │   └── spec.md
-│   └── session-management/
-│       └── spec.md
-├── design.md            How to implement it (optional)
-├── tasks.md             Steps to take (optional)
-└── notes/               Learnings along the way (optional)
-```
-
-Changes are identified by slug. The slug names the change, not the capability: `add-oauth`, not `authentication`. A capability may be touched by many changes over time.
-
-Multiple changes can coexist without conflict. Each is self-contained.
+A change is a proposed modification to the system. It lives in a folder under `changes/` and contains everything needed to understand, review, and implement the modification. Changes are identified by slug. The slug names the change, not the capability: `add-oauth`, not `authentication`. A capability may be touched by many changes over time. Multiple changes can coexist without conflict.
 
 ## Artifacts
 
@@ -114,46 +60,11 @@ Artifacts build on each other. The proposal names the capabilities; specs define
 
 ## Spec Deltas
 
-A spec delta describes what's changing in a single capability, relative to the current reference spec (or from scratch, if the capability is new).
+A spec delta describes what's changing in a single capability, relative to the current reference spec (or from scratch, if the capability is new). Four operation types: ADDED (new behavior), MODIFIED (changed behavior -- full replacement), REMOVED (deprecated behavior), RENAMED (heading change only). On archive, each operation merges mechanically into the reference spec.
 
-```markdown
-## ADDED Requirements
+MODIFIED provides the complete requirement block -- SHALL statement and all scenarios, even unchanged ones. The requirement heading is the match key; the entire block is replaced. No partial diffs, no "intelligent" merging.
 
-### Requirement: OAuth Login
-The system SHALL support OAuth 2.0 login via Google and GitHub.
-
-#### Scenario: Google OAuth
-  Given a user with a Google account
-  When they initiate "Sign in with Google"
-  Then they are authenticated via OAuth 2.0
-
-## MODIFIED Requirements
-
-### Requirement: Session Timeout
-The system SHALL expire sessions after 60 minutes of inactivity.
-
-#### Scenario: Idle timeout
-  Given an authenticated session
-  When 60 minutes pass without activity
-  Then the session is invalidated
-
-## REMOVED Requirements
-
-### Requirement: Legacy Auth
-**Reason**: Replaced by OAuth
-**Migration**: Users must re-register with OAuth provider
-```
-
-Four section types:
-
-| Section | Meaning | On archive |
-|---------|---------|------------|
-| `ADDED` | New behavior | Appended to reference spec |
-| `MODIFIED` | Changed behavior (full replacement) | Replaces matching requirement |
-| `REMOVED` | Deprecated behavior | Deleted from reference spec |
-| `RENAMED` | Name change only | Heading updated in reference spec |
-
-MODIFIED provides the complete requirement block -- SHALL statement and all scenarios, even unchanged ones. The requirement heading is the match key; the entire block is replaced at merge time. This keeps each delta self-contained and the merge mechanical: find block, replace block. No partial diffs, no scenario-level operations, no "intelligent" merging.
+For the full delta template and writing guidance, run `spexl explain spec-notation`.
 
 ### Why Deltas
 
@@ -165,19 +76,7 @@ MODIFIED provides the complete requirement block -- SHALL statement and all scen
 
 ## Archive
 
-Archiving completes a change. Its spec deltas merge into the reference, and the change folder moves to `changes/archive/` with a date prefix.
-
-```
-Before:
-  reference/auth/spec.md          ◄── current behavior
-  changes/add-oauth/deltas/auth/  ─── proposed changes
-
-After:
-  reference/auth/spec.md          ◄── now includes OAuth
-  changes/archive/2026-03-16-add-oauth/  ◄── preserved history
-```
-
-Reference specs describe how things work *now*, not how they changed. The archived change preserves the full story: the proposal (why), the deltas (what changed), the design (how), and the tasks (what was done).
+Archiving completes a change. Its spec deltas merge into the reference, and the change folder moves to `changes/archive/` with a date prefix. Reference specs describe how things work *now*, not how they changed. The archived change preserves the full story.
 
 **The cycle:**
 
@@ -190,29 +89,11 @@ Reference specs describe how things work *now*, not how they changed. The archiv
 
 ## Verification
 
-Every requirement needs a test. Every non-trivial scenario needs a corresponding test. Tests link back to specs with annotations:
-
-```python
-# spec: session-management requirement=session-timeout scenario=idle-timeout
-def test_idle_timeout():
-    ...
-```
-
-A change is not complete until all requirements have passing tests. Claiming "done" without evidence is an anti-pattern.
+Every requirement needs a test. Every non-trivial scenario needs a corresponding test. A change is not complete until all requirements have passing tests. For test strategies, annotation conventions, and coverage expectations, run `spexl explain verification`.
 
 ## Critique
 
-The spec-critic agent provides adversarial review -- a skeptical senior engineer who demands proof that the work is sound.
-
-Three modes:
-
-| Mode | Checks |
-|------|--------|
-| `intra-spec` | Coherence within the spec (contradictions, ambiguity, coverage) |
-| `spec-code` | Alignment with the codebase (assumptions validated, conventions followed) |
-| `inter-spec` | Consistency across specs (no conflicts between active changes) |
-
-The critic returns a verdict: `approved`, `approved-with-reservations`, `needs-work`, or `blocked`. Multi-turn dialogue continues until concerns are addressed or escalated to the user.
+The spec-critic agent provides adversarial review -- three modes: `intra-spec` (coherence), `spec-code` (code alignment), `inter-spec` (cross-spec consistency). Returns a verdict (`approved`, `approved-with-reservations`, `needs-work`, `blocked`) and engages in multi-turn dialogue until concerns are resolved. For checklists and dialogue rules, run `spexl explain critique`.
 
 ## Glossary
 

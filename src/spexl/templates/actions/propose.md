@@ -64,14 +64,7 @@ For changes with 3+ implementation steps or multi-session work. Run `spexl conte
 
 ## Completion
 
-All artifacts that make sense for the change should exist before moving to `/apply`.
-
-**Interactive mode:** Inform user the change is ready for implementation.
-
-**Autonomous mode:**
-- After proposal → invoke **spec-critic** (`intra-spec`)
-- After specs + design → invoke **spec-critic** (`intra-spec` + `spec-code`)
-- Then proceed to apply
+All artifacts that make sense for the change should exist before moving to `/apply`. In autonomous mode, follow the Propose workflow from the Interactive vs Autonomous section above.
 
 ## Example Flows
 

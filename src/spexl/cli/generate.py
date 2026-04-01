@@ -74,6 +74,7 @@ def _scaffold_project(project_root: Path) -> None:
     changes_dir.mkdir(parents=True, exist_ok=True)
     reference_dir.mkdir(parents=True, exist_ok=True)
 
+    # AI! Use a single multiline literal instead
     print(f"  created    {_display_path(config_path)}")
     print(f"  created    {_display_path(changes_dir)}/")
     print(f"  created    {_display_path(reference_dir)}/")

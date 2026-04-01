@@ -26,7 +26,7 @@ SKILL_MANIFESTS: dict[str, dict[str, T.Any]] = {
             '"create a spec", "start a new feature", "define requirements", '
             'or wants to create a formal specification for a new capability or modification.'
         ),
-        "partials": ["rules", "structure", "file-ownership", "cross-phase"],
+        "partials": ["rules", "structure", "file-ownership", "cross-phase", "interactive-vs-autonomous"],
         "action": "propose",
     },
     "refine": {
