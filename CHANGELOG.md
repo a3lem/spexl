@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **BREAKING** renamed the methodology skill from `spexl-how-to-use` to `spexl-foundations`. Action skills and agents defer to the new name. Re-run `spexl install <target>` to refresh; the stale `spexl-how-to-use/` directory is pruned automatically.
+- Rewrote the foundations skill body to introduce specifications and spec deltas first, then the CLI and reference index -- so a reader learning what spec-driven development *is* doesn't land in a lookup table.
+- **BREAKING** split `spexl init` into two commands: `spexl init` now only scaffolds the project (`.spexl.toml` + `specs/`), and `spexl install <target>` installs agent integration assets. Migrate `spexl init claude` → `spexl install claude`.
+- **BREAKING** `spexl init --remove` moved to `spexl install --remove`; remove now strips the `[agents]` section from `.spexl.toml` instead of deleting the file.
+- `spexl init` is idempotent: running it in an existing project creates missing `specs/` directories and leaves existing files untouched.
+- `spexl install` with no target refreshes every configured agent; errors with a hint if no `.spexl.toml` exists.
+
 ## [0.1.0] - 2026-03-24
 
 ### Plumbing

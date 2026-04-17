@@ -5,30 +5,32 @@ Spec-driven development CLI. Specs are the source of truth; code serves specs.
 ## What spexl Does
 
 Three roles:
-1. **Plumbing** – `new`, `changes`, `validate`, `archive`, `info`, `refs`, `link`, `unlink` (filesystem ops for spec management)
-2. **Skill generation** – `init claude`, `update` (compose partials + actions into self-contained SKILL.md files for AI agents)
-3. **Runtime steering** – `context <topic>`, `template <artifact>` (serve knowledge on demand to generated skills during execution)
+1. **Plumbing** – `new`, `changes`, `info`, `archive`, `validate`, `refs`, `link`, `unlink` (filesystem ops for spec management)
+2. **Project setup** – `init` scaffolds `.spexl.toml` and `specs/`; `install <target>` installs agent skills/subagents/hooks
+3. **Runtime steering** – `onboard` serves methodology knowledge on demand at runtime
 
 ## Project Structure
 
 ```
 src/spexl/
-├── __init__.py          # main() entry point, argparse routing
+├── __init__.py       # main() entry point, argparse routing
+├── __main__.py       # `python -m spexl`
+├── config.py         # .spexl.toml discovery/loading
+├── errors.py         # SpexlError + exit-code conventions
+├── specroot.py       # locate specs/ from CWD
 ├── cli/
-│   ├── plumbing.py      # Existing spec management commands
-│   ├── generate.py      # init, update
-│   └── steering.py      # context, template
-├── generate/
-│   └── compose.py       # Skill composition (partials + actions → SKILL.md)
-├── templates/           # Package data (importlib.resources)
-│   ├── partials/        # Shared rule fragments composed into skills
-│   ├── actions/         # Per-phase instructions (propose, apply, explore, refine, archive)
-│   ├── agents/          # Agent definitions (spec-critic, spec-sync)
-│   ├── concepts/        # Methodology docs (served by `spexl context`)
-│   └── artifacts/       # Artifact templates (served by `spexl template`)
-specs/                   # spexl's own specs (dogfooding)
-docs/                    # Concepts, history, historical archived changes
-tests/                   # pytest
+│   ├── changes.py    # new, changes, info, archive
+│   ├── install.py    # init (scaffold), install (agent assets)
+│   ├── steering.py   # onboard (serves methodology content)
+│   ├── refs.py       # refs
+│   ├── links.py      # link, unlink
+│   └── validate.py   # validate (+ --fix)
+└── content/          # Package data shipped via importlib.resources
+specs/                # spexl's own specs (dogfooding)
+  ├── reference/      # Current reference specs
+  └── changes/        # Active changes; archive/ holds completed ones
+tests/                # pytest
+.spexl.toml           # Project config (spec root, etc.)
 ```
 
 ## Running
@@ -36,10 +38,6 @@ tests/                   # pytest
 - `uv run spexl` – run locally during development
 - `uv run pytest` – run tests
 - `uv tool install -e .` – install locally as a tool for end-to-end testing
-
-## Active Change
-
-`specs/changes/rewrite-as-spexl/` – the foundational change that restructures spectl into spexl. Three capability deltas: `cli`, `skill-generation`, `runtime-steering`. Read `proposal.md` first.
 
 ## CLI Design
 
@@ -56,16 +54,6 @@ refine [instruction]  → Update any artifact
 apply [spec slug]     → Implement and verify
 archive [spec slug]   → Sync deltas to reference + archive
 ```
-
-## Inspiration
-
-- [kiro](https://kiro.dev/docs/)
-- [spec-kit](https://github.com/github/spec-kit)
-- [openspec](https://github.com/nicobailon/openspec)
-- [SDD tools (Fowler)](https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html)
-
-
-## Changelog and Versioning
 
 ## Changelog
 

@@ -1,10 +1,6 @@
 # Skill Generation
 
-## Overview / Purpose
-
-Skill generation installs hand-written agent integration files from spexl's bundled content tree. The `install <target>` command bootstraps a project with a methodology skill (`spexl-foundations`), five action skills (one per workflow phase), and two agent definitions. Subsequent runs refresh only files whose content has changed and prune files that are no longer part of the bundled tree. No composition or templating happens at install time; the content directory is copied verbatim. Project scaffolding (`.spexl.toml` + `specs/`) is handled separately by `spexl init`.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Install target
 The system SHALL support `spexl install <target>` to install agent integration files into the current project. The initial supported target is `claude`. Install is idempotent: first run creates all files; subsequent runs refresh only files whose content has changed. The install walks the `spexl.content` package tree and copies files verbatim, preserving the directory layout. `install` writes or updates `.spexl.toml` only to record the `[agents.<target>]` section; creating the `specs/` directory structure is the separate responsibility of `spexl init`.

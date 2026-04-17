@@ -12,7 +12,7 @@ from pathlib import Path
 
 import importlib.metadata
 
-from spexl.cli import changes, generate, links, refs, steering, validate
+from spexl.cli import changes, install, links, refs, steering, validate
 from spexl.config import discover_single_config
 from spexl.errors import SpexlError
 
@@ -81,7 +81,7 @@ def main() -> None:
     validate.register(subs)
     refs.register(subs)
     steering.register(subs)
-    generate.register(subs)
+    install.register(subs)
 
 
     args = parser.parse_args()
@@ -97,10 +97,9 @@ def main() -> None:
 
     # Commands that don't need spec root discovery
     no_root_commands = {
-        steering.cmd_prime,
-        steering.cmd_explain,
-        steering.cmd_template,
-        generate.cmd_init,
+        steering.cmd_onboard,
+        install.cmd_init,
+        install.cmd_install,
     }
 
     # Commands that handle their own discovery via args

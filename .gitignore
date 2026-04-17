@@ -12,3 +12,5 @@ wheels/
 .python-version
 tmp
 settings.local.json
+
+.claude/*/spexl-*

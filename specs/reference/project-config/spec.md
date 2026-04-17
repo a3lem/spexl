@@ -2,7 +2,7 @@
 
 ## Overview / Purpose
 
-The `.spexl.toml` file marks a directory as a spexl project (or sub-project) and configures spec location, directory naming, and skill installation paths. Two discovery modes use this marker differently: spec discovery (`changes`, `refs`, `validate`) walks DOWN from cwd to find `.spexl.toml` files (you only see what's below you), while init/install_path resolution and single-root resolution (`--no-recurse`) walk UP to find the nearest config.
+The `.spexl.toml` file marks a directory as a spexl project (or sub-project) and configures spec location, directory naming, and skill installation paths. Two discovery modes use this marker differently: spec discovery (`changes`, `refs`, `validate`) walks DOWN from cwd to find `.spexl.toml` files (you only see what's below you), while `spexl init` parent-project detection, `spexl install` install_path resolution, and single-root resolution (`--no-recurse`) walk UP to find the nearest config.
 
 ## Requirements
 
@@ -92,7 +92,7 @@ Spec discovery (`changes`, `refs`, `validate`) SHALL walk DOWN recursively from 
 - **THEN** that `.spexl.toml` is NOT discovered (the parent directory name causes it to be skipped)
 
 ### Requirement: Walk-up boundary
-For init and agent installation, the system SHALL walk up and stop when it encounters a `.spexl.toml` that declares `install_path` for the requested agent, OR when it reaches a `.git` directory (repository root), whichever comes first. Spec discovery (`changes`, `refs`, `validate`) does not walk up.
+For `spexl init` (parent-project detection) and `spexl install` (install_path resolution), the system SHALL walk up and stop when it encounters a `.spexl.toml` that declares `install_path` for the requested agent, OR when it reaches a `.git` directory (repository root), whichever comes first. Spec discovery (`changes`, `refs`, `validate`) does not walk up.
 
 #### Scenario: Stop at install_path
 - **GIVEN** two `.spexl.toml` files in the ancestor chain, both with `install_path`

@@ -170,6 +170,15 @@ reference_dir = "reference"
 
 For monorepos, each sub-project gets its own `.spexl.toml` and `specs/` directory. The CLI discovers configs by walking up from `--cwd` (or the current directory), and walks down to find nested spec roots.
 
+## Acknowledgements
+
+spexl draws on ideas from other spec-driven development tools and writing:
+
+- [openspec](https://github.com/nicobailon/openspec) -- the closest predecessor; the delta-then-merge workflow comes from here
+- [kiro](https://kiro.dev/docs/)
+- [spec-kit](https://github.com/github/spec-kit)
+- [SDD tools (Fowler)](https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html)
+
 ## License
 
 MIT

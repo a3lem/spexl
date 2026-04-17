@@ -1,10 +1,6 @@
 # Skill Generation
 
-## Overview / Purpose
-
-Skill generation installs hand-written agent integration files from spexl's bundled content tree. The `install <target>` command bootstraps a project with a methodology skill (`spexl-foundations`), five action skills (one per workflow phase), and two agent definitions. Subsequent runs refresh only files whose content has changed and prune files that are no longer part of the bundled tree. No composition or templating happens at install time; the content directory is copied verbatim. Project scaffolding (`.spexl.toml` + `specs/`) is handled separately by `spexl init`.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Install target
 The system SHALL support `spexl install <target>` to install agent integration files into the current project. The initial supported target is `claude`. Install is idempotent: first run creates all files; subsequent runs refresh only files whose content has changed. The install walks the `spexl.content` package tree and copies files verbatim, preserving the directory layout. `install` writes or updates `.spexl.toml` only to record the `[agents.<target>]` section; creating the `specs/` directory structure is the separate responsibility of `spexl init`.
@@ -12,7 +8,7 @@ The system SHALL support `spexl install <target>` to install agent integration f
 #### Scenario: Install claude in a fresh project
 - **GIVEN** no `.spexl.toml` exists in the current or any parent directory
 - **WHEN** the user runs `spexl install claude`
-- **THEN** the system creates `.claude/skills/spexl-foundations/` with `SKILL.md` and a `references/` subdirectory containing one file per methodology reference (rules, concepts, spec-notation, structure, verification, critique, design-guidance, tasks-guidance, modes)
+- **THEN** the system creates `.claude/skills/spexl-how-to-use/` with `SKILL.md` and a `references/` subdirectory containing one file per methodology reference (rules, concepts, spec-notation, structure, verification, critique, design-guidance, tasks-guidance, modes)
 - **AND** creates `.claude/skills/spexl-<action>/SKILL.md` for each phase: explore, propose, refine, apply, archive
 - **AND** creates `.claude/agents/spexl-spec-critic.md` and `.claude/agents/spexl-spec-sync.md`
 - **AND** does NOT write `.claude/rules/spexl.md` (the onboard primer is for manual paste into AGENTS.md/CLAUDE.md)
@@ -66,17 +62,17 @@ The system SHALL support `spexl install <target>` to install agent integration f
 - **THEN** the system prints "Nothing to remove" and exits 0
 
 ### Requirement: Methodology skill
-The system SHALL install a `spexl-foundations` skill alongside the action skills. This skill holds the shared methodology content in a `references/` subdirectory. Action skills delegate methodology knowledge to this skill by instructing the agent to invoke it before proceeding.
+The system SHALL install a `spexl-how-to-use` skill alongside the action skills. This skill holds the shared methodology content in a `references/` subdirectory. Action skills delegate methodology knowledge to this skill by instructing the agent to invoke it before proceeding.
 
 #### Scenario: Methodology skill installed with references
 - **WHEN** `spexl install claude` runs
-- **THEN** `.claude/skills/spexl-foundations/SKILL.md` is installed
-- **AND** `.claude/skills/spexl-foundations/references/` contains one markdown file per methodology topic (rules, concepts, spec-notation, structure, verification, critique, design-guidance, tasks-guidance, modes)
+- **THEN** `.claude/skills/spexl-how-to-use/SKILL.md` is installed
+- **AND** `.claude/skills/spexl-how-to-use/references/` contains one markdown file per methodology topic (rules, concepts, spec-notation, structure, verification, critique, design-guidance, tasks-guidance, modes)
 
 #### Scenario: Action skill references the methodology skill
 - **WHEN** `spexl install claude` installs any action skill (`spexl-explore`, `spexl-propose`, `spexl-refine`, `spexl-apply`, `spexl-archive`)
-- **THEN** the installed `SKILL.md` contains an instruction to invoke the `spexl-foundations` skill before proceeding
-- **AND** the installed `SKILL.md` does NOT reference any file path inside `spexl-foundations/` (action skills defer routing to the methodology skill instead of naming its internal files)
+- **THEN** the installed `SKILL.md` contains an instruction to invoke the `spexl-how-to-use` skill before proceeding
+- **AND** the installed `SKILL.md` does NOT reference any file path inside `spexl-how-to-use/` (action skills defer routing to the methodology skill instead of naming its internal files)
 
 ### Requirement: Agent generation
 The system SHALL install agent definition files from `spexl.content.agents` into the target's agent directory. Agent frontmatter references the methodology skill by name so agents can load methodology knowledge from it.
@@ -84,9 +80,14 @@ The system SHALL install agent definition files from `spexl.content.agents` into
 #### Scenario: Install spexl-spec-critic agent for Claude
 - **WHEN** `spexl install claude` runs
 - **THEN** it copies `spexl.content.agents.spexl-spec-critic.md` to `.claude/agents/spexl-spec-critic.md`
-- **AND** the installed file's frontmatter contains `skills: spexl-foundations`
+- **AND** the installed file's frontmatter contains `skills: spexl-how-to-use`
 
 #### Scenario: Install spexl-spec-sync agent for Claude
 - **WHEN** `spexl install claude` runs
 - **THEN** it copies `spexl.content.agents.spexl-spec-sync.md` to `.claude/agents/spexl-spec-sync.md`
-- **AND** the installed file's frontmatter contains `skills: spexl-foundations`
+- **AND** the installed file's frontmatter contains `skills: spexl-how-to-use`
+
+## RENAMED Requirements
+
+- FROM: `### Requirement: Init target`
+- TO: `### Requirement: Install target`
