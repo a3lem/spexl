@@ -1,0 +1,4 @@
+# Shablon configuration. Uncomment to override defaults.
+#
+# include = []
+# partials_dir = "_includes"

@@ -37,3 +37,21 @@ def test_subcommand_help():
 def test_archived_subcommand_removed(tmp_path):
     rc, out, err = run_spexl("archived", cwd=tmp_path)
     assert rc != 0
+
+
+# spec: cli requirement=cli-entry-point scenario=invoke-removed-subcommand-onboard
+def test_onboard_removed_subcommand(tmp_path):
+    rc, _out, _err = run_spexl("onboard", cwd=tmp_path)
+    assert rc != 0
+
+
+# spec: cli requirement=cli-entry-point scenario=invoke-removed-subcommand-prime
+def test_prime_removed_subcommand(tmp_path):
+    rc, _out, _err = run_spexl("prime", cwd=tmp_path)
+    assert rc != 0
+
+
+# spec: cli requirement=cli-entry-point scenario=invoke-removed-subcommand-install
+def test_install_removed_subcommand(tmp_path):
+    rc, _out, _err = run_spexl("install", cwd=tmp_path)
+    assert rc != 0

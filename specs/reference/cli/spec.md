@@ -2,7 +2,7 @@
 
 ## Overview / Purpose
 
-The `spexl` command-line interface routes user invocations to subcommand handlers across plumbing, skill generation, and runtime steering capabilities. It is structured as a Python package under `src/spexl/` and distributed via PyPI.
+The `spexl` command-line interface routes user invocations to subcommand handlers for project scaffolding and spec management. It is structured as a Python package under `src/spexl/` and distributed via PyPI. Skills, subagents, and the SessionStart primer ship as a Claude Code plugin (rendered from `.shablon/templates/`) -- not via the CLI.
 
 ## Requirements
 
@@ -23,9 +23,9 @@ The system SHALL expose a `spexl` command via `[project.scripts]` in pyproject.t
 - **WHEN** the user runs `spexl new <slug>`, `spexl changes`, `spexl validate`, `spexl info`, `spexl refs`, `spexl link`, or `spexl unlink`
 - **THEN** the system routes to the appropriate command handler
 
-#### Scenario: Invoke init or install
-- **WHEN** the user runs `spexl init` or `spexl install [<target>]`
-- **THEN** the system routes to the scaffold handler or the agent-install handler respectively
+#### Scenario: Invoke init
+- **WHEN** the user runs `spexl init`
+- **THEN** the system routes to the scaffold handler
 
 #### Scenario: Invoke removed subcommand
 - **WHEN** the user runs `spexl archived`
@@ -33,7 +33,7 @@ The system SHALL expose a `spexl` command via `[project.scripts]` in pyproject.t
 - **AND** exits 1
 
 ### Requirement: Init scaffolds project
-The system SHALL support `spexl init` (no arguments) to scaffold a spexl project in the current directory: it creates `.spexl.toml` and `specs/changes/` / `specs/reference/` directories. `spexl init` performs no agent-asset installation; agent setup lives under `spexl install`. When the directory is already fully initialized (both `.spexl.toml` and the configured specs directory exist), init exits 0 and prints a short notice to stderr without modifying anything. Partial states (missing config or missing specs directory) are backfilled.
+The system SHALL support `spexl init` (no arguments) to scaffold a spexl project in the current directory: it creates `.spexl.toml` and `specs/changes/` / `specs/reference/` directories. `spexl init` performs no agent-asset installation -- skills and subagents are distributed via the Claude Code plugin, installed through Claude's plugin mechanism. When the directory is already fully initialized (both `.spexl.toml` and the configured specs directory exist), init exits 0 and prints a short notice to stderr without modifying anything. Partial states (missing config or missing specs directory) are backfilled.
 
 #### Scenario: Init in empty directory
 - **WHEN** the user runs `spexl init` in a directory with no `.spexl.toml`
@@ -70,7 +70,7 @@ The system SHALL support `spexl init` (no arguments) to scaffold a spexl project
 
 #### Scenario: Init rejects target argument
 - **WHEN** the user runs `spexl init <anything>`
-- **THEN** the system prints an error indicating `init` takes no arguments and suggests `spexl install <target>` for agent setup
+- **THEN** the system prints an error indicating `init` takes no arguments and points to the plugin mechanism for agent setup
 - **AND** exits 1
 
 ### Requirement: Validate checks marker
@@ -100,40 +100,22 @@ src/spexl/
 ├── errors.py            # SpexlError
 ├── specroot.py          # Spec root discovery, change resolution, .change.json I/O
 ├── config.py            # .spexl.toml parsing and defaults
-├── cli/
-│   ├── changes.py       # new, changes, info, archive
-│   ├── links.py         # link, unlink
-│   ├── validate.py      # validate (+ --fix)
-│   ├── refs.py          # refs
-│   ├── install.py       # init (scaffold), install (agent assets)
-│   └── steering.py      # onboard
-└── content/             # Package data: skills, agents, onboard primer
-    ├── skills/
-    │   ├── spexl-foundations/              # methodology skill with references/
-    │   │   ├── SKILL.md
-    │   │   └── references/
-    │   │       ├── rules.md
-    │   │       ├── concepts.md
-    │   │       ├── spec-notation.md
-    │   │       ├── structure.md
-    │   │       ├── verification.md
-    │   │       ├── critique.md
-    │   │       ├── design-guidance.md
-    │   │       ├── tasks-guidance.md
-    │   │       └── modes.md
-    │   └── spexl-<action>/SKILL.md         # one per phase: explore, propose, refine, apply, archive
-    ├── agents/
-    │   ├── spexl-spec-critic.md
-    │   └── spexl-spec-sync.md
-    └── onboard.md
+└── cli/
+    ├── changes.py       # new, changes, info, archive
+    ├── links.py         # link, unlink
+    ├── validate.py      # validate (+ --fix)
+    ├── refs.py          # refs
+    └── init.py          # init (project scaffold)
 ```
+
+The package bundles no agent content. Skills, subagents, and the SessionStart primer live under `skills/`, `agents/`, and `plugins/claude/hooks/` at the repo root, rendered by `shablon` from `.shablon/templates/`, and shipped as a Claude Code plugin via `.claude-plugin/plugin.json`.
 
 The global `--cwd` option sets the starting directory for `.spexl.toml` discovery. Default: current working directory.
 
 #### Scenario: Install via uv tool install
 - **WHEN** a user runs `uv tool install spexl`
 - **THEN** the `spexl` command is available on PATH
-- **AND** content files are accessible via `importlib.resources` from the `spexl.content` package
+- **AND** the installed wheel does NOT bundle skills, agents, or primer content
 
 #### Scenario: Explicit project directory
 - **WHEN** the user runs `spexl --cwd /path/to/project changes`
@@ -144,7 +126,7 @@ The global `--cwd` option sets the starting directory for `.spexl.toml` discover
 - **THEN** the system starts `.spexl.toml` discovery from the current working directory
 
 ### Requirement: Subcommand routing
-The system SHALL use argparse with subparsers to route to command handlers. Each CLI module (`changes`, `links`, `validate`, `refs`, `install`, `steering`) exposes a `register(subparsers)` function called by `main()`. The `install` module registers both the `init` and `install` subparsers.
+The system SHALL use argparse with subparsers to route to command handlers. Each CLI module (`changes`, `links`, `validate`, `refs`, `init`) exposes a `register(subparsers)` function called by `main()`.
 
 #### Scenario: Help for a specific subcommand
 - **WHEN** the user runs `spexl <subcommand> --help`
@@ -430,26 +412,3 @@ The system SHALL support `spexl refs` to list all reference spec capabilities di
 ### Requirement: Changes output formatting
 The system SHALL display `spexl changes` output grouped by project directory. Group headers show the relative path from the working directory to the project directory (the parent of `specs/`). Archived groups are labeled with `(archived)`. Each change is listed with its id, status, and slug.
 
-### Requirement: Install command
-The system SHALL support `spexl install [<target>]` to install, refresh, or remove spexl agent integration files. The installation behavior lives in the `skill-generation` capability; this requirement defines the CLI surface that routes to it.
-
-#### Scenario: Install with target
-- **WHEN** the user runs `spexl install <target>` (e.g. `spexl install claude`)
-- **THEN** the system routes to the agent-install handler for that target
-
-#### Scenario: Install without target
-- **WHEN** the user runs `spexl install` with no target
-- **THEN** the system routes to the refresh handler, which refreshes every configured agent installation
-
-#### Scenario: Install with unknown target
-- **WHEN** the user runs `spexl install <unknown-target>`
-- **THEN** the system prints an error listing supported targets
-- **AND** exits 1
-
-#### Scenario: Install --remove
-- **WHEN** the user runs `spexl install --remove`
-- **THEN** the system routes to the remove handler, which deletes managed agent files and clears `[agents]` from `.spexl.toml`
-
-#### Scenario: Install help
-- **WHEN** the user runs `spexl install --help`
-- **THEN** the system prints usage for the install command, listing supported targets and the `--remove` flag

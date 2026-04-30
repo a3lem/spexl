@@ -1,0 +1,25 @@
+{
+  "name": "spexl",
+  "owner": {
+    "name": "a3lem",
+    "email": "a3lem@pm.me"
+  },
+  "metadata": {
+    "description": "Spec-driven development workflow: explore, propose, refine, apply, archive. Skills and subagents that turn specs into the source of truth.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "spexl",
+      "source": "./",
+      "description": "Spec-driven development workflow: explore, propose, refine, apply, archive. Skills and subagents that turn specs into the source of truth.",
+      "author": {
+        "name": "a3lem",
+        "email": "a3lem@pm.me"
+      },
+      "repository": "https://github.com/a3lem/spexl",
+      "license": "MIT",
+      "keywords": ["spec-driven-development", "spexl", "ai-agent", "specifications"]
+    }
+  ]
+}

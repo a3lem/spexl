@@ -57,7 +57,7 @@ Run `spexl --help` for the full list. Key commands:
 | `spexl validate` | Check changes for structural problems |
 | `spexl archive <slug>` | Archive a completed change |
 
-Project scaffolding (`.spexl.toml` + `specs/`) lives under `spexl init`; agent-asset setup lives under `spexl install <target>` (initial target: `claude`).
+Project scaffolding (`.spexl.toml` + `specs/`) lives under `spexl init`. Skills, subagents, and the SessionStart primer ship as a Claude Code plugin -- install via Claude's plugin mechanism, not via the CLI.
 
 ## Agents
 

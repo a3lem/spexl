@@ -1,18 +1,17 @@
 # [AI]
-# Context: cli-help-cleanup
-# Intent: clean CLI help with commands listed under a single "commands:" title
+# Context: spex-9c9a (shablon migration); steering + install removed, init kept.
+# Intent: CLI entry point with init + change-management subcommands only.
 
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import os
 import sys
 import typing as T
 from pathlib import Path
 
-import importlib.metadata
-
-from spexl.cli import changes, install, links, refs, steering, validate
+from spexl.cli import changes, init, links, refs, validate
 from spexl.config import discover_single_config
 from spexl.errors import SpexlError
 
@@ -34,13 +33,10 @@ class _Formatter(argparse.HelpFormatter):
 class _Parser(argparse.ArgumentParser):
     def format_help(self) -> str:
         formatter = self._get_formatter()
-        # 1. description
         formatter.add_text(self.description)
-        # 2. usage
         formatter.add_usage(
             self.usage, self._actions, self._mutually_exclusive_groups,
         )
-        # 3. commands, then options (instead of argparse default: options, commands)
         groups_by_title = {g.title: g for g in self._action_groups}
         for title in ("positional arguments", "commands", "options"):
             group = groups_by_title.get(title)
@@ -80,9 +76,7 @@ def main() -> None:
     links.register(subs)
     validate.register(subs)
     refs.register(subs)
-    steering.register(subs)
-    install.register(subs)
-
+    init.register(subs)
 
     args = parser.parse_args()
 
@@ -95,14 +89,8 @@ def main() -> None:
         print("Run 'spexl --help' for available commands.", file=sys.stderr)
         sys.exit(1)
 
-    # Commands that don't need spec root discovery
-    no_root_commands = {
-        steering.cmd_onboard,
-        install.cmd_init,
-        install.cmd_install,
-    }
+    no_root_commands = {init.cmd_init}
 
-    # Commands that handle their own discovery via args
     discovery_commands = {
         changes.cmd_changes,
         changes.cmd_info,

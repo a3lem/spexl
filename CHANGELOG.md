@@ -4,12 +4,13 @@
 
 ### Changed
 
-- **BREAKING** renamed the methodology skill from `spexl-how-to-use` to `spexl-foundations`. Action skills and agents defer to the new name. Re-run `spexl install <target>` to refresh; the stale `spexl-how-to-use/` directory is pruned automatically.
+- **BREAKING** removed `spexl install` and `spexl prime` (and the legacy `spexl onboard` stub). Skills, subagents, and the SessionStart primer ship as a Claude Code plugin: `skills/`, `agents/`, `plugins/claude/hooks/`, and `.claude-plugin/plugin.json` at the repo root. Install via Claude Code's plugin mechanism, not the CLI.
+- Plugin content is now rendered from `.shablon/templates/` by [shablon](https://github.com/a3lem/shablon). Edit templates, run `just plugins` (= `shablon generate`), commit both. The SessionStart hook `cat`s `plugins/claude/hooks/prime.md` -- no Python in the priming path.
+- Removed `install_targets` from `.spexl.toml`. The legacy `[agents.*]` table migration is also gone.
+- Removed `src/spexl/content/` and the `spexl.cli.install`/`spexl.cli.steering` modules. `cmd_init` lives in `spexl.cli.init`.
+- Renamed the methodology skill from `spexl-how-to-use` to `spexl-foundations`. Action skills and agents defer to the new name.
 - Rewrote the foundations skill body to introduce specifications and spec deltas first, then the CLI and reference index -- so a reader learning what spec-driven development *is* doesn't land in a lookup table.
-- **BREAKING** split `spexl init` into two commands: `spexl init` now only scaffolds the project (`.spexl.toml` + `specs/`), and `spexl install <target>` installs agent integration assets. Migrate `spexl init claude` → `spexl install claude`.
-- **BREAKING** `spexl init --remove` moved to `spexl install --remove`; remove now strips the `[agents]` section from `.spexl.toml` instead of deleting the file.
-- `spexl init` is idempotent: running it in an existing project creates missing `specs/` directories and leaves existing files untouched.
-- `spexl install` with no target refreshes every configured agent; errors with a hint if no `.spexl.toml` exists.
+- `spexl init` is idempotent: running it in an existing project creates missing `specs/` directories and leaves existing files untouched. Passing a positional argument (e.g. `spexl init claude`) errors with guidance to use the plugin mechanism.
 
 ## [0.1.0] - 2026-03-24
 

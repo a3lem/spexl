@@ -2,7 +2,7 @@
 
 ## Overview / Purpose
 
-The `.spexl.toml` file marks a directory as a spexl project (or sub-project) and configures spec location, directory naming, and skill installation paths. Two discovery modes use this marker differently: spec discovery (`changes`, `refs`, `validate`) walks DOWN from cwd to find `.spexl.toml` files (you only see what's below you), while `spexl init` parent-project detection, `spexl install` install_path resolution, and single-root resolution (`--no-recurse`) walk UP to find the nearest config.
+The `.spexl.toml` file marks a directory as a spexl project (or sub-project) and configures spec location and directory naming. Two discovery modes use this marker differently: spec discovery (`changes`, `refs`, `validate`) walks DOWN from cwd to find `.spexl.toml` files (you only see what's below you), while `spexl init` parent-project detection and single-root resolution (`--no-recurse`) walk UP to find the nearest config.
 
 ## Requirements
 
@@ -21,14 +21,17 @@ The system SHALL recognize `.spexl.toml` as the project marker file. A minimal v
   dir_path = "./design/specs"
   changes_dir = "proposals"
   reference_dir = "baseline"
-
-  [agents.claude]
-  install_path = ".claude"
   ```
 - **WHEN** spexl resolves spec roots
 - **THEN** the system looks for specs at `<toml_parent>/design/specs/`
 - **AND** changes at `<toml_parent>/design/specs/proposals/`
 - **AND** reference specs at `<toml_parent>/design/specs/baseline/`
+
+#### Scenario: Unknown sections are ignored
+- **GIVEN** a `.spexl.toml` containing keys or sections not recognized by spexl (e.g. legacy `[agents.claude]` from a previous version, or `install_targets = [...]`)
+- **WHEN** spexl reads the config
+- **THEN** the unknown keys are ignored silently
+- **AND** spexl uses defaults for any unspecified known fields
 
 ### Requirement: Specs location defaults
 The system SHALL use the following defaults when `[specs_location]` fields are omitted:
@@ -51,28 +54,6 @@ The system SHALL use the following defaults when `[specs_location]` fields are o
 - **WHEN** spexl resolves paths
 - **THEN** defaults are used: `specs/`, `specs/changes/`, `specs/reference/`
 
-### Requirement: Install path inheritance
-The system SHALL resolve `install_path` by walking UP from the current directory to find the nearest `.spexl.toml` that declares `[agents.<name>].install_path`. This walk-up is used only for init and agent installation, not for spec discovery. The `install_path` is relative to the toml file that declares it.
-
-#### Scenario: Leaf inherits from root
-- **GIVEN** a monorepo with:
-  - `monorepo/.spexl.toml` containing `[agents.claude] install_path = ".claude"`
-  - `monorepo/services/api/.spexl.toml` with no `[agents]` section
-- **WHEN** spexl resolves the install path for `services/api/`
-- **THEN** the install path resolves to `monorepo/.claude/`
-
-#### Scenario: Leaf overrides root
-- **GIVEN** a monorepo with:
-  - `monorepo/.spexl.toml` containing `[agents.claude] install_path = ".claude"`
-  - `monorepo/services/api/.spexl.toml` containing `[agents.claude] install_path = ".claude"`
-- **WHEN** spexl resolves the install path for `services/api/`
-- **THEN** the install path resolves to `monorepo/services/api/.claude/`
-
-#### Scenario: No install path anywhere
-- **GIVEN** a `.spexl.toml` with no `[agents]` section and no ancestor toml with one
-- **WHEN** spexl attempts to resolve the install path
-- **THEN** the system errors with a message indicating no install path is configured
-
 ### Requirement: Walk-down recursive discovery
 Spec discovery (`changes`, `refs`, `validate`) SHALL walk DOWN recursively from the starting directory, collecting every `.spexl.toml` found at any depth. Directories named `node_modules`, `.venv`, `.git`, `__pycache__`, or `archive` SHALL be skipped during the walk. The walk does not stop when it encounters a `.spexl.toml` – it continues into subdirectories to find nested spec roots.
 
@@ -92,15 +73,15 @@ Spec discovery (`changes`, `refs`, `validate`) SHALL walk DOWN recursively from 
 - **THEN** that `.spexl.toml` is NOT discovered (the parent directory name causes it to be skipped)
 
 ### Requirement: Walk-up boundary
-For `spexl init` (parent-project detection) and `spexl install` (install_path resolution), the system SHALL walk up and stop when it encounters a `.spexl.toml` that declares `install_path` for the requested agent, OR when it reaches a `.git` directory (repository root), whichever comes first. Spec discovery (`changes`, `refs`, `validate`) does not walk up.
+For `spexl init` (parent-project detection) and `--no-recurse` single-root resolution, the system SHALL walk up from the starting directory and stop when it encounters a `.spexl.toml`, OR when it reaches a `.git` directory (repository root), whichever comes first. Spec discovery (`changes`, `refs`, `validate`) does not walk up.
 
-#### Scenario: Stop at install_path
-- **GIVEN** two `.spexl.toml` files in the ancestor chain, both with `install_path`
+#### Scenario: Stop at nearest ancestor toml
+- **GIVEN** two `.spexl.toml` files in the ancestor chain
 - **WHEN** spexl walks up from a leaf
-- **THEN** it stops at the nearest ancestor with `install_path`
+- **THEN** it stops at the nearest ancestor `.spexl.toml`
 
 #### Scenario: Stop at git boundary
-- **GIVEN** a `.spexl.toml` without `install_path` and no ancestor toml within the same git repo
+- **GIVEN** no `.spexl.toml` in any ancestor within the same git repo
 - **WHEN** spexl walks up
 - **THEN** it stops at the directory containing `.git`
 - **AND** does not cross into parent repositories
